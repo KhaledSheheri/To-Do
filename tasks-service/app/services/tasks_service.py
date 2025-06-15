@@ -2,34 +2,31 @@ import io
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from datetime import datetime,time,timezone
 from sqlalchemy.orm import Session
-from app.database import get_db
+from app.database import get_session
 from app.schemas import AddTaskRequest, DeleteTaskRequest,PatchTaskRequest,GetTasksRequest,TaskResponse,GetTasksResponse
 from app.models import Task,User
 from app.utils.pdf_exporter import generate_tasks_pdf
 from fastapi.responses import StreamingResponse
 from apscheduler.schedulers.background import BackgroundScheduler
+from sqlalchemy import insert,select,delete
 
 scheduler = BackgroundScheduler()
 scheduler.start()
 
-def get_tasks_service(user_id: int,db: Session):
-    tasks = (
-            db.query(Task)
-            .filter(Task.user_id ==user_id)
-            .order_by(Task.position.asc(), Task.created_at.asc())
-            .all()
-        )
+def get_tasks_service(user_id: int,session: Session):
+    tasks=(
+        session.execute(select(Task).where(Task.user_id==user_id).order_by(Task.position.asc(), Task.created_at.asc())).scalars()
+    )
     if not tasks:
         raise HTTPException(status_code=404, detail="No tasks found for this user")
 
     return GetTasksResponse(Tasks=tasks)
 
 
-def create_new_task_service(payload:AddTaskRequest,db: Session):
-    user = db.query(User).filter(User.id == payload.user_id).first()
+def create_new_task_service(payload:AddTaskRequest,session: Session):
+    user = session.execute(select(User).where(User.id==payload.user_id)).scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=400, detail="User ID does not exist")
-    
+        raise HTTPException(status_code=400, detail="User ID does not exist") 
     new_task=Task(
         user_id=payload.user_id,
         title=payload.title,
@@ -38,33 +35,33 @@ def create_new_task_service(payload:AddTaskRequest,db: Session):
     if payload.due_date is not None:
         new_task.due_date = payload.due_date
 
-    db.add(new_task)
-    db.commit()
-    db.refresh(new_task)
+    session.add(new_task)
+    session.commit()
+    session.refresh(new_task)
     if payload.due_date is not None:
         run_datetime = payload.due_date
         new_task.due_date = run_datetime
         if run_datetime <datetime.now(timezone.utc):
-            mark_task_as_done(new_task.id, db)
+            mark_task_as_done(new_task.id, session)
         else:
             scheduler.add_job(
                 mark_task_as_done,
                 trigger='date',
                 run_date=run_datetime,
-                args=[new_task.id, db]
+                args=[new_task.id, session]
             )
     return new_task
 
-def mark_task_as_done(task_id:int,db: Session):
-    selected_task=db.query(Task).filter(Task.id==task_id).first()
+def mark_task_as_done(task_id:int,session: Session):
+    selected_task= session.execute(select(Task).where(Task.id==task_id)).scalar_one()
     selected_task.status = "done"
-    db.commit()
-    db.refresh(selected_task)
+    session.commit()
+    session.refresh(selected_task)
 
 
 
-def delete_task_service(payload:DeleteTaskRequest,db: Session):
-    selected_task=db.query(Task).filter(Task.id==payload.task_id).first()
+def delete_task_service(payload:DeleteTaskRequest,session: Session):
+    selected_task=session.execute(select(Task).where(Task.id==payload.task_id)).scalar_one_or_none()
 
     if not selected_task:
         raise HTTPException(
@@ -78,11 +75,11 @@ def delete_task_service(payload:DeleteTaskRequest,db: Session):
             detail="Task Belongs To Another User"
         )
 
-    db.delete(selected_task)
-    db.commit()
+    session.delete(selected_task)
+    session.commit()
 
-def patch_task_service(payload: PatchTaskRequest, db: Session):
-    selected_task = db.query(Task).filter(Task.id == payload.task_id).first()
+def patch_task_service(payload: PatchTaskRequest, session: Session):
+    selected_task=session.execute(select(Task).where(Task.id == payload.task_id)).scalar_one_or_none()
 
     if not selected_task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
@@ -104,26 +101,26 @@ def patch_task_service(payload: PatchTaskRequest, db: Session):
     if payload.due_date is not None:
         selected_task.due_date = payload.due_date
 
-    db.commit()
-    db.refresh(selected_task)
+    session.commit()
+    session.refresh(selected_task)
     if payload.due_date is not None:
         run_datetime = payload.due_date
         selected_task.due_date = run_datetime
         if run_datetime <datetime.now(timezone.utc):
-            mark_task_as_done(selected_task.id, db)
+            mark_task_as_done(selected_task.id, session)
         else:
             scheduler.add_job(
                 mark_task_as_done,
                 trigger='date',
                 run_date=run_datetime,
-                args=[selected_task.id, db]
+                args=[selected_task.id, session]
             )
 
     return selected_task
 
 
-def export_tasks_pdf_service(user_id: int, db: Session):
-    tasks = db.query(Task).filter(Task.user_id == user_id).all()
+def export_tasks_pdf_service(user_id: int, session: Session):
+    tasks=session.execute(select(Task).where(Task.user_id == user_id)).scalars()
     if not tasks:
         raise HTTPException(status_code=404, detail="No tasks to export")
     
