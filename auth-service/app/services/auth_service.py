@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import select,insert,delete
 from fastapi import HTTPException, status
 from app.models import User
 from app.schemas import RegisterRequest, UserResponse, RegisterResponse,LoginResponse,LoginRequest
@@ -6,10 +7,8 @@ from app.utils.password import hash_password,verify_password
 from app.utils.jwt_handler import create_access_token
 
 
-def register_user(db: Session, payload: RegisterRequest) -> RegisterResponse:
-    existing_user = db.query(User).filter(
-        (User.username == payload.username)
-    ).first()
+def register_user(session: Session, payload: RegisterRequest) -> RegisterResponse:
+    existing_user=session.execute(select(User).where(User.username==payload.username)).scalar_one_or_none()
 
     if existing_user:
         raise HTTPException(
@@ -23,16 +22,17 @@ def register_user(db: Session, payload: RegisterRequest) -> RegisterResponse:
         hashed_password=hashedPassword,
     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
     return RegisterResponse(
         statusCode=status.HTTP_201_CREATED,
         message="User created successfully"
     )
 
-def login_user(db: Session, payload: LoginRequest) -> LoginResponse:
-    user = db.query(User).filter(User.username == payload.username).first()
+def login_user(session: Session, payload: LoginRequest) -> LoginResponse:
+    user = session.execute(select(User).where(User.username==payload.username)).scalar_one_or_none()
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
