@@ -41,7 +41,7 @@ def create_new_task_service(payload:AddTaskRequest,session: Session):
     if payload.due_date is not None:
         run_datetime = payload.due_date
         new_task.due_date = run_datetime
-        if run_datetime <datetime.now(timezone.utc):
+        if run_datetime <datetime.now():
             mark_task_as_done(new_task.id, session)
         else:
             scheduler.add_job(

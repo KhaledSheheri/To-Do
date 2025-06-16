@@ -27,7 +27,7 @@ class AddTaskRequest(BaseModel):
     user_id: int
     title:str
     description:str
-    due_date: Optional[datetime] =None
+    due_date: Optional[datetime] = None
 
 class DeleteTaskRequest(BaseModel):
     user_id: int
