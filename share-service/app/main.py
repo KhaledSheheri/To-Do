@@ -17,7 +17,7 @@ app.add_middleware(
     ##allow_headers=["*"],
 )
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(engine)
 
 app.include_router(share_router.router,prefix="/taskshare",tags=["TaskShare"])
 
