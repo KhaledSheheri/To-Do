@@ -31,7 +31,7 @@ class ModifyTaskRequest(BaseModel):
     title:str
     description:str
     position:int
-    user_id: int |  None=None
+    user_id: int |  None = None
 
 class PatchTaskRequest(BaseModel):
     user_id:int
