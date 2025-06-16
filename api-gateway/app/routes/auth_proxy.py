@@ -4,8 +4,8 @@ from app.schemas import RegisterRequest,LoginRequest,TokenData
 import httpx
 
 router = APIRouter()
-# AUTH_SERVICE_URL = "http://localhost:80/auth"  
-AUTH_SERVICE_URL = "http://host.docker.internal:80/auth"  
+AUTH_SERVICE_URL = "http://localhost:8001/auth"  
+# AUTH_SERVICE_URL = "http://host.docker.internal:80/auth"  
 
 
 @router.post("/login")

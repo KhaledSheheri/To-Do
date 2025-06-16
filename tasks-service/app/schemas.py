@@ -27,7 +27,7 @@ class AddTaskRequest(BaseModel):
     user_id: int
     title:str
     description:str
-    due_date: Optional[datetime] = None
+    due_date: datetime | None = None
 
 class DeleteTaskRequest(BaseModel):
     user_id: int
@@ -43,11 +43,11 @@ class ModifyTaskRequest(BaseModel):
 class PatchTaskRequest(BaseModel):
     user_id:int
     task_id: int
-    title: Optional[str] = None
-    description: Optional[str] = None
-    position: Optional[int] = None
-    due_date: Optional[datetime] =None
-    status: Optional[TaskStatus] = None
+    title: str| None = None
+    description:str| None = None
+    position: int| None = None
+    due_date: str| None = None
+    status: str| None = None
     class Config:
         use_enum_values = True
 

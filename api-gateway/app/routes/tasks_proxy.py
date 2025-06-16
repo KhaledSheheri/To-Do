@@ -8,8 +8,8 @@ from app.utils.auth_utils import get_user_id_from_token,verify_token_and_get_use
 
 
 router = APIRouter()
-# TASK_SERVICE_URL = "http://localhost:1025/tasks"
-TASK_SERVICE_URL = "http://host.docker.internal:1025/tasks"
+TASK_SERVICE_URL = "http://localhost:8002/tasks"
+# TASK_SERVICE_URL = "http://host.docker.internal:1025/tasks"
 
 
 

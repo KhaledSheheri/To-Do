@@ -7,8 +7,8 @@ from app.schemas import AddTaskShareRequest, DeleteTaskShareRequest, GetTasksReq
 from app.utils.auth_utils import verify_token_and_get_user_id
 
 router = APIRouter()
-# TASK_SHARE_SERVICE_URL = "http://localhost:1024/taskshare"
-TASK_SHARE_SERVICE_URL = "http://host.docker.internal:1024/taskshare"
+TASK_SHARE_SERVICE_URL = "http://localhost:8003/taskshare"
+# TASK_SHARE_SERVICE_URL = "http://host.docker.internal:1024/taskshare"
 
 
 

@@ -18,28 +18,29 @@ class TokenData(BaseModel):
 class AddTaskRequest(BaseModel):
     title:str
     description:str
-    user_id: int = None
-    due_date: Optional[datetime] = None
+    user_id: int |  None=None
+    due_date: datetime |  None=None
 
 
 class DeleteTaskRequest(BaseModel):
     task_id:int
-    user_id: int = None
+    user_id: int |  None=None
 
 class ModifyTaskRequest(BaseModel):
     task_id:int
     title:str
     description:str
     position:int
-    user_id: int = None
+    user_id: int |  None=None
 
 class PatchTaskRequest(BaseModel):
+    user_id:int
     task_id: int
-    title: Optional[str] = None
-    description: Optional[str] = None
-    position: Optional[int] = None
-    status: Optional[TaskStatus] = None
-    user_id: int = None
+    title: str| None = None
+    description:str| None = None
+    position: int| None = None
+    due_date: str| None = None
+    status: str| None = None
     class Config:
         use_enum_values = True
 

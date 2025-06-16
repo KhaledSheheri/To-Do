@@ -43,7 +43,7 @@ async def test_create_new_task(create_new_task_test_sit_up,client):
         due_date=datetime.now()
     )
     response=await client.post(
-        "http://localhost:8080/tasks/",
+        "http://localhost:8002/tasks/",
         json=request.model_dump(mode="json")
     )
     assert response.status_code ==200
