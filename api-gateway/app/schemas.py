@@ -19,6 +19,8 @@ class AddTaskRequest(BaseModel):
     title:str
     description:str
     user_id: int = None
+    due_date: Optional[datetime] = None
+
 
 class DeleteTaskRequest(BaseModel):
     task_id:int
@@ -65,11 +67,6 @@ class GetTasksResponse(BaseModel):
     
     class Config:
         from_attributes = True
-    
-class AddTaskRequest(BaseModel):
-    user_id: int
-    title:str
-    description:str
 
 class ModifyTaskRequest(BaseModel):
     task_id:int
